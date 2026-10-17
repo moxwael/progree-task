@@ -1,0 +1,24 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    image: progree-api
+    container_name: progree-backend
+    environment:
+      APP_NAME: progree-api
+      APP_VERSION: "1.0.0"
+      APP_ENV: development
+    expose:
+      - "5000"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+    image: cloud-native-frontend:1.0
+    container_name: cloud-native-frontend
+    ports:
+      - "8080:8080"
+    depends_on:
+      - backend
+    restart: unless-stopped

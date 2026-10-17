@@ -1,0 +1,128 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloud Native Dashboard</title>
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+        }
+
+        header {
+            padding: 24px 8%;
+            background: #1e293b;
+            border-bottom: 1px solid #334155;
+        }
+
+        main {
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 0 24px;
+        }
+
+        .card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .status {
+            font-weight: bold;
+            color: #fbbf24;
+        }
+
+        .status.online { color: #4ade80; }
+        .status.offline { color: #f87171; }
+
+        h1 { margin: 0; font-size: 24px; }
+        h2 { font-size: 18px; }
+        p { color: #94a3b8; }
+
+        button {
+            background: #2563eb;
+            color: white;
+            border: 0;
+            border-radius: 6px;
+            padding: 10px 16px;
+            cursor: pointer;
+        }
+
+        pre {
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+            color: #93c5fd;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Cloud Native Dashboard</h1>
+        <p>Application health and service monitoring</p>
+    </header>
+
+    <main>
+        <section class="card">
+            <h2>Backend API Status</h2>
+            <p id="status" class="status">Checking...</p>
+            <button onclick="checkHealth()">Refresh Status</button>
+        </section>
+
+        <section class="card">
+            <h2>Application Information</h2>
+            <pre id="info">Loading application information...</pre>
+        </section>
+    </main>
+
+    <script>
+        async function checkHealth() {
+            const status = document.getElementById("status");
+
+            try {
+                const response = await fetch("/api/health");
+
+                if (!response.ok) {
+                    throw new Error("Health check failed");
+                }
+
+                const data = await response.json();
+                status.textContent = "● " + data.status.toUpperCase();
+                status.className = "status online";
+            } catch (error) {
+                status.textContent = "● OFFLINE";
+                status.className = "status offline";
+            }
+        }
+
+        async function loadInfo() {
+            const output = document.getElementById("info");
+
+            try {
+                const response = await fetch("/api/info");
+
+                if (!response.ok) {
+                    throw new Error("Request failed");
+                }
+
+                output.textContent = JSON.stringify(
+                    await response.json(), null, 2
+                );
+            } catch (error) {
+                output.textContent = "Unable to load application information.";
+            }
+        }
+
+        checkHealth();
+        loadInfo();
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,51 @@
+
+name: Cloud Native CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements-dev.txt
+
+      - name: Install dependencies
+        run: pip install -r backend/requirements-dev.txt
+
+      - name: Run Linting
+        run: flake8 backend/app.py backend/tests/
+
+      - name: Run Unit Tests
+        working-directory: backend
+        run: pytest -v
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Backend Image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          push: false
+          tags: progree-api:latest  
+
+      - name: Build Frontend Image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          push: false
+          tags: cloud-native-frontend:1.0 
+
